@@ -1,0 +1,23 @@
+{
+    "name": "dsv/codeigniter-installer",
+    "description": "Codeigniter application installer.",
+    "keywords": ["codeigniter","codeigniter-installer"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "David Sosa Valdes",
+            "email": "david.sosa.valdes@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": { "Codeigniter\\Installer\\": "src/Codeigniter/Installer" }
+    },
+    "require": {
+        "guzzlehttp/guzzle": "^6.1",
+        "symfony/console": "^3.0",
+        "symfony/process": "^3.0"
+    },
+    "bin": [
+        "codeigniter"
+    ] 
+}
