@@ -12,3 +12,4 @@ Also you can specify the CI version with the second param,  so the installer can
 ```
 codeigniter new blog 3.0.3
 ```
+
