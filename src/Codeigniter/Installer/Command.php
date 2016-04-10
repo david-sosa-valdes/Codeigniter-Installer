@@ -67,7 +67,7 @@ class Command extends SymfonyCommand
                 'version', 
                 InputArgument::OPTIONAL,
                 'CodeIgniter version required',
-                '3.0.3'
+                '3.0.6'
             );
     }	
 
