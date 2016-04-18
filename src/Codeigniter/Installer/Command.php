@@ -5,6 +5,7 @@ namespace Codeigniter\Installer;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -68,6 +69,12 @@ class Command extends SymfonyCommand
                 InputArgument::OPTIONAL,
                 'CodeIgniter version required',
                 '3.0.6'
+            )
+            ->addOption(
+                'interactive',
+                'i',
+                InputOption::VALUE_NONE,
+                'Interactive mode'
             );
     }	
 
@@ -86,6 +93,7 @@ class Command extends SymfonyCommand
         $this->_version = $input->getArgument('version');
 
         $question = new Question('Application path [<comment>'.$directory.'</comment>]: ', $directory);
+        
         $question->setValidator(function ($test_directory) {
             if (is_dir($test_directory)) {
                 throw new \RuntimeException(
@@ -93,9 +101,12 @@ class Command extends SymfonyCommand
                 );
             }
             return $test_directory;
-        });            
+        });
 
-        $this->_directory = $helper->ask($input, $output, $question);
+        $this->_directory = ($input->getOption('interactive'))
+            ? $helper->ask($input, $output, $question)
+            : $directory;
+
         $this->_path = realpath(dirname($this->_directory));
 
         $output->writeln('<info>Creating CI application...</info>');
