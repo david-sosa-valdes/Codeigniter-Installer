@@ -8,7 +8,7 @@ A Composer global command that installs the latest official version of the Codei
 composer global require "dsv/codeigniter-installer"
 ```
 
-Make sure to place the ~/.composer/vendor/bin directory in your bash `PATH` so the ```codeigniter``` executable can be located by your system. 
+Make sure to place the `~/.composer/vendor/bin` directory in your bash `PATH` so the `codeigniter` executable can be located by your system. 
 
 Once installed, you can run the command:
 
