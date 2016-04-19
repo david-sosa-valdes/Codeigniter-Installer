@@ -6,8 +6,16 @@ require __DIR__.'/src/bootstrap.php';
 use Symfony\Component\Console\Application;
 use Codeigniter\Installer\Command;
 
-$app = new Symfony\Component\Console\Application('Codeigniter Installer','1.0.0');
+/**
+ * Codeigniter Global Installer
+ *
+ * @author     David Sosa Valdes <https://github.com/davidsosavaldes>
+ * @license    MIT License
+ * @link       https://github.com/davidsosavaldes/Codeigniter-Installer
+ * @copyright  Copyright (c) 2016, David Sosa Valdes.
+ */
+
+$app = new Symfony\Component\Console\Application('Codeigniter Installer','1.1.0');
 $command = new Codeigniter\Installer\Command();
 $app->add($command);
 $app->run();
-

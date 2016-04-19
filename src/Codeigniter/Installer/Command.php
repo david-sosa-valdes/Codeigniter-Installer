@@ -8,44 +8,48 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
-
-use ZipArchive;
 use GuzzleHttp\Client;
 
-use RuntimeException;
-
+/**
+ * Installer Command Class
+ *
+ * @author     David Sosa Valdes <https://github.com/davidsosavaldes>
+ * @license    MIT License
+ * @link       https://github.com/davidsosavaldes/Codeigniter-Installer
+ * @copyright  Copyright (c) 2016, David Sosa Valdes.
+ * @version    1.0.0
+ */
 class Command extends SymfonyCommand
 {
     /**
-     * [$_version description]
-     * @var [type]
+     * Codeigniter version
+     * @var integer
      */
     protected $_version;
 
     /**
-     * [$_path description]
-     * @var [type]
+     * Installation path
+     * @var string
      */
     protected $_path;
 
     /**
-     * [$_url description]
+     * Codeigniter URL
      * @var string
      */
     protected $_url = 'http://github.com/bcit-ci/CodeIgniter/archive/{version}.zip';
 
     /**
-     * [$_directory description]
+     * Installation directory path
      * @var string
      */
     protected $_directory;
 
     /**
-     * [$_file description]
-     * @var [type]
+     * Zip file created
+     * @var string
      */
     protected $_file;
 
@@ -152,7 +156,7 @@ class Command extends SymfonyCommand
      */
     protected function extract()
     {
-        $archive = new ZipArchive;
+        $archive = new \ZipArchive;
         if($archive->open($this->_file) !== TRUE)
         {
             throw new \RuntimeException("Error extracting the file.");
@@ -188,7 +192,5 @@ class Command extends SymfonyCommand
         @chmod($this->_file, 0777);
         @unlink($this->_file);
         return $this;
-    }     
-
-
+    }
 }
