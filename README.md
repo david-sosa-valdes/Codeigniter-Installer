@@ -1,5 +1,7 @@
 ## Codeigniter - Application Installer
 
+A Composer global command that installs the latest official version of the Codeigniter framework.
+
 **Using Composer:**
 
 ```
@@ -14,7 +16,7 @@ Once installed, you can run the command:
 codeigniter new <app_name>
 ``` 
 
-It will create a fresh CodeIgniter installation in the directory you specify. Also you can specify the CI version with the second param, so the installer can search for an alternate application environment:
+Also you can specify the CI version with the second param, so the installer can search for an alternate application version:
 
 ```
 codeigniter new blog 3.0.3
