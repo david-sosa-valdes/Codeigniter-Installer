@@ -1,6 +1,6 @@
 ## Codeigniter - Application Installer
 
-A Composer global command that installs the latest official version of the Codeigniter framework.
+A Composer global command that installs the latest official Codeigniter framework.
 
 **Using Composer:**
 
