@@ -2,6 +2,8 @@
 
 A Composer global command that installs the latest official Codeigniter framework.
 
+[![asciicast](https://asciinema.org/a/45174.png)](https://asciinema.org/a/45174)
+
 **Using Composer:**
 
 ```
