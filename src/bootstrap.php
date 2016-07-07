@@ -10,4 +10,3 @@ if ((! $loader = include_if_exists(__DIR__ . '/../vendor/autoload.php')) && (! $
         'curl -s http://getcomposer.org/installer | php'.PHP_EOL.
         'php composer.phar install'.PHP_EOL);
 }
-return $loader;

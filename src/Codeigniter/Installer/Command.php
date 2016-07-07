@@ -1,5 +1,4 @@
 <?php
-
 namespace Codeigniter\Installer;
 
 use Symfony\Component\Process\Process;
@@ -157,6 +156,7 @@ class Command extends SymfonyCommand
     protected function extract()
     {
         $archive = new \ZipArchive;
+
         if($archive->open($this->_file) !== TRUE)
         {
             throw new \RuntimeException("Error extracting the file.");
@@ -170,6 +170,7 @@ class Command extends SymfonyCommand
          * - http://stackoverflow.com/questions/6682491/extract-files-in-a-zip-to-root-of-a-folder 
          */
         $old_path = $this->_path.'/CodeIgniter-'.$this->_version;
+
         if (! file_exists($old_path)) 
         {
             throw new \RuntimeException("Error Processing file request". $old_path);
@@ -191,6 +192,13 @@ class Command extends SymfonyCommand
     {
         @chmod($this->_file, 0777);
         @unlink($this->_file);
+
+        $directory = rtrim($this->_directory, '/').DIRECTORY_SEPARATOR;
+        $callback = function($filename) use($directory){
+            return @unlink($directory.$filename);
+        };
+
+        @array_map($callback, ['.gitignore', 'composer.json']);
         return $this;
     }
 }
