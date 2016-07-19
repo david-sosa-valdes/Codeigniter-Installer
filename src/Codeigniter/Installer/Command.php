@@ -9,6 +9,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use GuzzleHttp\Client;
 
 /**
@@ -64,7 +66,7 @@ class Command extends SymfonyCommand
             ->setDescription('Create a new Codeigniter application.')
             ->addArgument(
                 'name', 
-                InputArgument::REQUIRED,
+                InputArgument::OPTIONAL,
                 'Application name'
             )
             ->addArgument(
@@ -72,12 +74,6 @@ class Command extends SymfonyCommand
                 InputArgument::OPTIONAL,
                 'CodeIgniter version required',
                 '3.0.6'
-            )
-            ->addOption(
-                'interactive',
-                'i',
-                InputOption::VALUE_NONE,
-                'Interactive mode'
             );
     }	
 
@@ -95,7 +91,7 @@ class Command extends SymfonyCommand
         $directory = getcwd().'/'.$input->getArgument('name');
         $this->_version = $input->getArgument('version');
 
-        $question = new Question('Application path [<comment>'.$directory.'</comment>]: ', $directory);
+        $question = new Question('Application name: ', $directory);
         
         $question->setValidator(function ($test_directory) {
             if (is_dir($test_directory)) {
@@ -106,15 +102,15 @@ class Command extends SymfonyCommand
             return $test_directory;
         });
 
-        $this->_directory = ($input->getOption('interactive'))
-            ? $helper->ask($input, $output, $question)
-            : $directory;
+        $this->_directory = ($input->getArgument('name'))
+            ? $directory
+            : $helper->ask($input, $output, $question);
 
         $this->_path = realpath(dirname($this->_directory));
 
         $output->writeln('<info>Creating CI application...</info>');
 
-        $this->create_zipfile()
+        $this->create_file()
              ->download_CI()
              ->extract()
              ->clean();
@@ -127,7 +123,7 @@ class Command extends SymfonyCommand
      *
      * @return string
      */    
-    protected function create_zipfile()
+    protected function create_file()
     {
         $this->_file = $this->_path.'/codeigniter_'.hash('md5', time()).'.zip';
         return $this;
@@ -189,16 +185,16 @@ class Command extends SymfonyCommand
      * @return $this
      */
     protected function clean()
-    {
-        @chmod($this->_file, 0777);
-        @unlink($this->_file);
+    {        
+        $fs        = new Filesystem();
+        $directory = $this->_directory.DIRECTORY_SEPARATOR;
 
-        $directory = rtrim($this->_directory, '/').DIRECTORY_SEPARATOR;
-        $callback = function($filename) use($directory){
-            return @unlink($directory.$filename);
-        };
-
-        @array_map($callback, ['.gitignore', 'composer.json']);
+        $fs->chmod($this->_file, 0777);
+        $fs->remove($this->_file);
+        array_map(function ($filename) use ($directory, $fs) {
+            $component = $directory.$filename;
+            $fs->exists($component) && $fs->remove($component);
+        }, ['.gitignore', 'composer.json', 'contributing.md', 'readme.rst', 'user_guide']);       
         return $this;
     }
 }
