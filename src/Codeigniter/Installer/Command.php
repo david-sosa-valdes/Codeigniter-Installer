@@ -25,34 +25,39 @@ use GuzzleHttp\Client;
 class Command extends SymfonyCommand
 {
     /**
+     * Zip file created
+     * @var string
+     */
+    private $_file;
+
+    /**
      * Codeigniter version
      * @var integer
      */
-    protected $_version;
+    private $_version;
 
     /**
      * Installation path
      * @var string
      */
-    protected $_path;
-
-    /**
-     * Codeigniter URL
-     * @var string
-     */
-    protected $_url = 'http://github.com/bcit-ci/CodeIgniter/archive/{version}.zip';
+    private $_path;
 
     /**
      * Installation directory path
      * @var string
      */
-    protected $_directory;
+    private $_directory;
 
     /**
-     * Zip file created
+     * @var \Symfony\Filesystem
+     */
+    private $_filesystem;
+
+    /**
+     * Codeigniter URL
      * @var string
      */
-    protected $_file;
+    const URL = 'http://github.com/bcit-ci/CodeIgniter/archive/{version}.zip';
 
     /**
      * Configure the command options.
@@ -74,6 +79,12 @@ class Command extends SymfonyCommand
                 InputArgument::OPTIONAL,
                 'CodeIgniter version required',
                 '3.0.6'
+            )
+            ->addOption(
+                'secure',
+                NULL,
+                InputOption::VALUE_NONE,
+                'If set, the task will create a secure CI installation'
             );
     }	
 
@@ -88,10 +99,11 @@ class Command extends SymfonyCommand
     {
         $helper = $this->getHelper('question');
 
-        $directory = getcwd().'/'.$input->getArgument('name');
         $this->_version = $input->getArgument('version');
-
-        $question = new Question('Application name: ', $directory);
+        $this->_filesystem = new Filesystem();
+        
+        $directory = getcwd().'/'.$input->getArgument('name');
+        $question  = new Question('Application name: ', $directory);
         
         $question->setValidator(function ($test_directory) {
             if (is_dir($test_directory)) {
@@ -115,15 +127,15 @@ class Command extends SymfonyCommand
              ->extract()
              ->clean();
 
+        $input->getOption('secure') && $this->secure();
+
         $output->writeln('<comment>Application ready! Build something amazing.</comment>');
     }
 
     /**
      * Generate a random temporary filename.
-     *
-     * @return string
      */    
-    protected function create_file()
+    private function create_file()
     {
         $this->_file = $this->_path.'/codeigniter_'.hash('md5', time()).'.zip';
         return $this;
@@ -131,25 +143,18 @@ class Command extends SymfonyCommand
 
     /**
      * Download the temporary Zip to the given file.
-     *
-     * @param  string  $zipFile
-     * @return $this
      */
-    protected function download_CI()
+    private function download_CI()
     {
-        $response = (new Client)->get(str_replace('{version}', $this->_version, $this->_url));
+        $response = (new Client)->get(str_replace('{version}', $this->_version, self::URL));
         file_put_contents($this->_file, $response->getBody());
         return $this;
     }
 
     /**
      * Extract the zip file into the given directory.
-     *
-     * @param  string  $zipFile
-     * @param  string  $directory
-     * @return $this
      */
-    protected function extract()
+    private function extract()
     {
         $archive = new \ZipArchive;
 
@@ -176,25 +181,66 @@ class Command extends SymfonyCommand
             rename($old_path, $this->_directory);
         }
         return $this;
-    }   
+    }
 
     /**
-     * Clean-up the Zip file.
-     *
-     * @param  string  $zipFile
-     * @return $this
+     * Clean-up the zip file
      */
-    protected function clean()
+    private function clean()
     {        
-        $fs        = new Filesystem();
         $directory = $this->_directory.DIRECTORY_SEPARATOR;
 
-        $fs->chmod($this->_file, 0777);
-        $fs->remove($this->_file);
-        array_map(function ($filename) use ($directory, $fs) {
-            $component = $directory.$filename;
-            $fs->exists($component) && $fs->remove($component);
-        }, ['.gitignore', 'composer.json', 'contributing.md', 'readme.rst', 'user_guide']);       
+        $this->_filesystem->chmod($this->_file, 0777);
+        $this->_filesystem->remove($this->_file);
+
+        $filenames = ['.gitignore', 'composer.json', 'contributing.md', 'readme.rst', 'user_guide'];
+        // Remove recursive strategy if filename is a directory
+        foreach ($filenames as $filename) 
+        {
+            $this->_filesystem->exists($component = $directory.$filename) 
+                && $this->_filesystem->remove($component);
+        }       
+        return $this;
+    }
+
+    /**
+     * Create a secure CI installation
+     */
+    private function secure()
+    {
+        // Create htaccess
+        $line = "RewriteEngine On\n";
+        $line.= "RewriteCond %{REQUEST_FILENAME} !-f\n";
+        $line.= "RewriteCond %{REQUEST_FILENAME} !-d\n";
+        $line.= "RewriteRule ^(.*)$ index.php/$1 [L]\n";
+        $this->_filesystem->mkdir($this->_directory.'/public');
+        $this->_filesystem->dumpFile($this->_directory.'/public/.htaccess', $line);
+
+        // Replace index paths
+        $find = array_map(
+            function($key) {return  "/^.*(= '$key').*$/m";}, 
+            ["system", "application"]
+        );
+        $replace = array_map(
+            function($block) {return  "\t".str_replace('"',"'", $block);}, 
+            ['$system_path = "../system";', '$application_folder = "../application";']
+        );
+        $this->_filesystem->dumpFile(
+            $this->_directory.'/public/index.php',
+            preg_replace($find, $replace, file_get_contents($this->_directory.'/index.php'))
+        );
+        $this->_filesystem->remove($this->_directory.'/index.php');
+
+        // Config the index page
+        $block = '$config["index_page"] = "";';
+        $this->_filesystem->dumpFile(
+            $this->_directory.'/application/config/config.php', 
+            preg_replace(
+                "/^.*('index_page').*$/m", 
+                str_replace('"', "'", $block), 
+                file_get_contents($this->_directory.'/application/config/config.php')
+            )
+        );
         return $this;
     }
 }
