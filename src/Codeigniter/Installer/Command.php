@@ -78,7 +78,7 @@ class Command extends SymfonyCommand
                 'version', 
                 InputArgument::OPTIONAL,
                 'CodeIgniter version required',
-                '3.0.6'
+                '3.1.2'
             )
             ->addOption(
                 'secure',
@@ -193,7 +193,7 @@ class Command extends SymfonyCommand
         $this->_filesystem->chmod($this->_file, 0777);
         $this->_filesystem->remove($this->_file);
 
-        $filenames = ['.gitignore', 'composer.json', 'contributing.md', 'readme.rst', 'user_guide'];
+        $filenames = ['.gitignore', 'composer.json', 'user_guide'];
         // Remove recursive strategy if filename is a directory
         foreach ($filenames as $filename) 
         {
