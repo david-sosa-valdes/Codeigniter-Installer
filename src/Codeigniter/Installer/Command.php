@@ -60,6 +60,12 @@ class Command extends SymfonyCommand
     const URL = 'http://github.com/bcit-ci/CodeIgniter/archive/{version}.zip';
 
     /**
+     * Codeigniter STABLE VERSION
+     * @var string
+     */
+    const DEFAULT_VERSION = '3.1.6';
+
+    /**
      * Configure the command options.
      *
      * @return void
@@ -78,7 +84,7 @@ class Command extends SymfonyCommand
                 'version', 
                 InputArgument::OPTIONAL,
                 'CodeIgniter version required',
-                '3.1.2'
+                self::DEFAULT_VERSION
             )
             ->addOption(
                 'secure',
